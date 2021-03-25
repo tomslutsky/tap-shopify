@@ -10,7 +10,7 @@ setup(
     classifiers=["Programming Language :: Python :: 3 :: Only"],
     py_modules=["tap_shopify"],
     install_requires=[
-        "ShopifyAPI==8.0.1",
+        "ShopifyAPI==8.3.1",
         "singer-python==5.12.1",
     ],
     extras_require={
@@ -26,7 +26,7 @@ setup(
     tap-shopify=tap_shopify:main
     """,
     packages=["tap_shopify"],
-    package_data = {
+    package_data={
         "schemas": ["tap_shopify/schemas/*.json"]
     },
     include_package_data=True,

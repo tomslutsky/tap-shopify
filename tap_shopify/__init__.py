@@ -13,10 +13,11 @@ from singer import metadata
 from singer import Transformer
 from tap_shopify.context import Context
 from tap_shopify.exceptions import ShopifyError
-import tap_shopify.streams # Load stream objects into Context
+import tap_shopify.streams  # Load stream objects into Context
 
 REQUIRED_CONFIG_KEYS = ["shop", "api_key"]
 LOGGER = singer.get_logger()
+
 
 def initialize_shopify_client():
     api_key = Context.config['api_key']
@@ -25,10 +26,13 @@ def initialize_shopify_client():
     session = shopify.Session(shop, version, api_key)
     shopify.ShopifyResource.activate_session(session)
 
+
 def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
 # Load schemas from schemas folder
+
+
 def load_schemas():
     schemas = {}
 
@@ -45,19 +49,25 @@ def load_schemas():
 
 def get_discovery_metadata(stream, schema):
     mdata = metadata.new()
-    mdata = metadata.write(mdata, (), 'table-key-properties', stream.key_properties)
-    mdata = metadata.write(mdata, (), 'forced-replication-method', stream.replication_method)
+    mdata = metadata.write(
+        mdata, (), 'table-key-properties', stream.key_properties)
+    mdata = metadata.write(
+        mdata, (), 'forced-replication-method', stream.replication_method)
 
     if stream.replication_key:
-        mdata = metadata.write(mdata, (), 'valid-replication-keys', [stream.replication_key])
+        mdata = metadata.write(
+            mdata, (), 'valid-replication-keys', [stream.replication_key])
 
     for field_name in schema['properties'].keys():
         if field_name in stream.key_properties or field_name == stream.replication_key:
-            mdata = metadata.write(mdata, ('properties', field_name), 'inclusion', 'automatic')
+            mdata = metadata.write(
+                mdata, ('properties', field_name), 'inclusion', 'automatic')
         else:
-            mdata = metadata.write(mdata, ('properties', field_name), 'inclusion', 'available')
+            mdata = metadata.write(
+                mdata, ('properties', field_name), 'inclusion', 'available')
 
     return metadata.to_list(mdata)
+
 
 def load_schema_references():
     shared_schema_file = "definitions.json"
@@ -68,6 +78,7 @@ def load_schema_references():
         refs[shared_schema_file] = json.load(data_file)
 
     return refs
+
 
 def discover():
     raw_schemas = load_schemas()
@@ -85,7 +96,7 @@ def discover():
             'stream': schema_name,
             'tap_stream_id': schema_name,
             'schema': singer.resolve_schema_references(schema, refs),
-            'metadata' : get_discovery_metadata(stream, schema),
+            'metadata': get_discovery_metadata(stream, schema),
             'key_properties': stream.key_properties,
             'replication_key': stream.replication_key,
             'replication_method': stream.replication_method
@@ -93,6 +104,7 @@ def discover():
         streams.append(catalog_entry)
 
     return {'streams': streams}
+
 
 def shuffle_streams(stream_name):
     '''
@@ -106,6 +118,7 @@ def shuffle_streams(stream_name):
     top_half = Context.catalog["streams"][matching_index:]
     bottom_half = Context.catalog["streams"][:matching_index]
     Context.catalog["streams"] = top_half + bottom_half
+
 
 def sync():
     initialize_shopify_client()
@@ -121,7 +134,8 @@ def sync():
 
     # If there is a currently syncing stream bookmark, shuffle the
     # stream order so it gets sync'd first
-    currently_sync_stream_name = Context.state.get('bookmarks', {}).get('currently_sync_stream')
+    currently_sync_stream_name = Context.state.get(
+        'bookmarks', {}).get('currently_sync_stream')
     if currently_sync_stream_name:
         shuffle_streams(currently_sync_stream_name)
 
@@ -145,14 +159,17 @@ def sync():
                 for rec in stream.sync():
                     extraction_time = singer.utils.now()
                     record_schema = catalog_entry['schema']
-                    record_metadata = metadata.to_map(catalog_entry['metadata'])
-                    rec = transformer.transform(rec, record_schema, record_metadata)
+                    record_metadata = metadata.to_map(
+                        catalog_entry['metadata'])
+                    rec = transformer.transform(
+                        rec, record_schema, record_metadata)
                     singer.write_record(stream_id,
                                         rec,
                                         time_extracted=extraction_time)
                     Context.counts[stream_id] += 1
             except pyactiveresource.connection.ResourceNotFound as exc:
-                raise ShopifyError(exc, 'Ensure shop is entered correctly') from exc
+                raise ShopifyError(
+                    exc, 'Ensure shop is entered correctly') from exc
             except pyactiveresource.connection.UnauthorizedAccess as exc:
                 raise ShopifyError(exc, 'Invalid access token - Re-authorize the connection') \
                     from exc
@@ -167,7 +184,6 @@ def sync():
             except Exception as exc:
                 raise ShopifyError(exc) from exc
 
-
         Context.state['bookmarks'].pop('currently_sync_stream')
         singer.write_state(Context.state)
 
@@ -175,6 +191,7 @@ def sync():
     for stream_id, stream_count in Context.counts.items():
         LOGGER.info('%s: %d', stream_id, stream_count)
     LOGGER.info('----------------------')
+
 
 @utils.handle_top_exception(LOGGER)
 def main():
@@ -196,6 +213,7 @@ def main():
         Context.config = args.config
         Context.state = args.state
         sync()
+
 
 if __name__ == "__main__":
     main()
