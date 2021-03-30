@@ -3,6 +3,7 @@ from singer import metadata
 
 LOGGER = singer.get_logger()
 
+
 class Context():
     config = {}
     state = {}
@@ -14,7 +15,8 @@ class Context():
     @classmethod
     def get_catalog_entry(cls, stream_name):
         if not cls.stream_map:
-            cls.stream_map = {s["tap_stream_id"]: s for s in cls.catalog['streams']}
+            cls.stream_map = {s["tap_stream_id"]
+                : s for s in cls.catalog['streams']}
         return cls.stream_map[stream_name]
 
     @classmethod
