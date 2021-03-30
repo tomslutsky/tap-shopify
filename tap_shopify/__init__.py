@@ -22,7 +22,7 @@ LOGGER = singer.get_logger()
 def initialize_shopify_client():
     api_key = Context.config['api_key']
     shop = Context.config['shop']
-    version = '2021-01'
+    version = '2020-10'
     session = shopify.Session(shop, version, api_key)
     shopify.ShopifyResource.activate_session(session)
 
