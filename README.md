@@ -11,6 +11,7 @@ This tap:
   - [Abandoned Checkouts](https://help.shopify.com/en/api/reference/orders/abandoned_checkouts)
   - [Collects](https://help.shopify.com/en/api/reference/products/collect)
   - [Custom Collections](https://help.shopify.com/en/api/reference/products/customcollection)
+  - [Smart Collections](https://help.shopify.com/en/api/reference/products/smartcollection)
   - [Customers](https://help.shopify.com/en/api/reference/customers)
   - [Metafields](https://help.shopify.com/en/api/reference/metafield)
   - [Orders](https://help.shopify.com/en/api/reference/orders)
